@@ -1,0 +1,155 @@
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+public class RecipeRecommender {
+
+    private JFrame frame;
+    private JTextField ingredientInputField;
+    private JTextArea recipeDisplayArea;
+    private JComboBox<String> dietaryComboBox;
+    private DefaultListModel<String> ingredientListModel;
+    private List<String> allRecipes;
+    private HashMap<String, String> dietaryPreferences;
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new RecipeRecommender().showGUI());
+    }
+
+    public void showGUI() {
+        // Initialize frame
+        frame = new JFrame("Recipe Recommender");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.setLayout(new BorderLayout());
+
+        // Left Sidebar
+        JPanel sidebar = new JPanel();
+        sidebar.setBackground(new Color(178, 156, 255)); // Soft purple
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setPreferredSize(new Dimension(200, 600));
+
+        JLabel appTitle = new JLabel("Do-it");
+        appTitle.setFont(new Font("Sans Serif", Font.BOLD, 30));
+        appTitle.setForeground(Color.WHITE);
+        appTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel dietaryLabel = new JLabel("Dietary Preferences");
+        dietaryLabel.setForeground(Color.WHITE);
+        dietaryLabel.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        dietaryLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        dietaryComboBox = new JComboBox<>(
+                new String[] { "None", "Vegetarian", "Vegan", "Gluten-Free", "Low-Carb", "High-Protein" });
+        dietaryComboBox.setMaximumSize(new Dimension(150, 30));
+        dietaryComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton recommendButton = new JButton("Recommend Recipes");
+        recommendButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        recommendButton.addActionListener(e -> recommendRecipes());
+
+        sidebar.add(Box.createVerticalStrut(30));
+        sidebar.add(appTitle);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(dietaryLabel);
+        sidebar.add(Box.createVerticalStrut(10));
+        sidebar.add(dietaryComboBox);
+        sidebar.add(Box.createVerticalStrut(30));
+        sidebar.add(recommendButton);
+
+        // Main Panel
+        JPanel mainPanel = new JPanel();
+        mainPanel.setBackground(new Color(240, 240, 255)); // Light background
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JLabel ingredientLabel = new JLabel("Add Ingredients");
+        ingredientLabel.setFont(new Font("Sans Serif", Font.BOLD, 24));
+
+        ingredientInputField = new JTextField();
+        ingredientInputField.setFont(new Font("Sans Serif", Font.PLAIN, 18));
+
+        JButton addIngredientButton = new JButton("+");
+        addIngredientButton.setFont(new Font("Sans Serif", Font.BOLD, 18));
+        addIngredientButton.addActionListener(e -> addIngredient());
+
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BorderLayout());
+        inputPanel.add(ingredientInputField, BorderLayout.CENTER);
+        inputPanel.add(addIngredientButton, BorderLayout.EAST);
+
+        ingredientListModel = new DefaultListModel<>();
+        JList<String> ingredientList = new JList<>(ingredientListModel);
+        ingredientList.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        JScrollPane ingredientScrollPane = new JScrollPane(ingredientList);
+
+        recipeDisplayArea = new JTextArea();
+        recipeDisplayArea.setEditable(false);
+        recipeDisplayArea.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        recipeDisplayArea.setBackground(new Color(255, 255, 255));
+        JScrollPane recipeScrollPane = new JScrollPane(recipeDisplayArea);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, ingredientScrollPane, recipeScrollPane);
+        splitPane.setDividerLocation(200);
+
+        mainPanel.add(ingredientLabel, BorderLayout.NORTH);
+        mainPanel.add(inputPanel, BorderLayout.CENTER);
+        mainPanel.add(splitPane, BorderLayout.SOUTH);
+
+        // Initialize data
+        initializeRecipes();
+
+        // Add panels to frame
+        frame.add(sidebar, BorderLayout.WEST);
+        frame.add(mainPanel, BorderLayout.CENTER);
+
+        frame.setVisible(true);
+    }
+
+    private void initializeRecipes() {
+        allRecipes = new ArrayList<>();
+        dietaryPreferences = new HashMap<>();
+
+        // Dummy recipes with dietary tags
+        allRecipes.add("Vegetable Stir Fry - Vegetarian, Gluten-Free");
+        allRecipes.add("Grilled Chicken Salad - Low-Carb, High-Protein");
+        allRecipes.add("Vegan Pasta - Vegan, Gluten-Free");
+        allRecipes.add("Cheeseburger - None");
+        allRecipes.add("Tofu Scramble - Vegan, High-Protein");
+    }
+
+    private void addIngredient() {
+        String ingredient = ingredientInputField.getText().trim();
+        if (!ingredient.isEmpty()) {
+            ingredientListModel.addElement(ingredient);
+            ingredientInputField.setText(""); // Clear input field
+        } else {
+            JOptionPane.showMessageDialog(frame, "Ingredient cannot be empty.");
+        }
+    }
+
+    private void recommendRecipes() {
+        String selectedDietaryPreference = (String) dietaryComboBox.getSelectedItem();
+        List<String> matchingRecipes = new ArrayList<>();
+
+        for (String recipe : allRecipes) {
+            if (selectedDietaryPreference.equals("None") || recipe.contains(selectedDietaryPreference)) {
+                matchingRecipes.add(recipe);
+            }
+        }
+
+        if (matchingRecipes.isEmpty()) {
+            recipeDisplayArea.setText("No recipes found for the selected dietary preference.");
+        } else {
+            recipeDisplayArea.setText("Recommended Recipes:\n");
+            for (String recipe : matchingRecipes) {
+                recipeDisplayArea.append("- " + recipe + "\n");
+            }
+        }
+    }
+}
