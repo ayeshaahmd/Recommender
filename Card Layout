@@ -1,0 +1,234 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
+
+class RecipeRecommender {
+
+    private JFrame frame;
+    private JTextField usernameField;
+    private JComboBox<String> dietaryComboBox;
+    private JTextArea recipeDisplayArea;
+    private JTextArea groceryListArea;
+    private JPanel mainPanel;
+    private JPanel usernamePanel;
+    private JTextField ingredientInputField;
+    private List<String> allRecipes; // List to store recipe names
+    private List<String> groceryItems; // List to store grocery items
+    private JPanel contentPanel;
+    private CardLayout cardLayout;
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new RecipeRecommender().showUsernameScreen());
+    }
+
+    public RecipeRecommender() {
+        allRecipes = new ArrayList<>();
+        groceryItems = new ArrayList<>();
+    }
+
+    public void showUsernameScreen() {
+        frame = new JFrame("Recipe Recommender");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.setLayout(new BorderLayout());
+        frame.setResizable(true);
+
+        usernamePanel = new JPanel();
+        usernamePanel.setBackground(new Color(255, 85, 85)); // Red color background
+        usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.Y_AXIS));
+
+        JLabel welcomeLabel = new JLabel("Welcome to Recipe Recommender!");
+        welcomeLabel.setFont(new Font("Sans Serif", Font.BOLD, 24));
+        welcomeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        welcomeLabel.setForeground(Color.WHITE);
+
+        JLabel usernameLabel = new JLabel("Enter Username:");
+        usernameLabel.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        usernameLabel.setForeground(Color.WHITE);
+
+        usernameField = new JTextField();
+        usernameField.setFont(new Font("Sans Serif", Font.PLAIN, 18));
+        usernameField.setMaximumSize(new Dimension(250, 30));
+        usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton continueButton = new JButton("Continue");
+        continueButton.setFont(new Font("Sans Serif", Font.PLAIN, 18));
+        continueButton.setBackground(new Color(255, 50, 50)); // Darker red for the button
+        continueButton.setForeground(Color.WHITE);
+        continueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        continueButton.addActionListener(e -> handleUsernameInput());
+
+        usernamePanel.add(Box.createVerticalStrut(100));
+        usernamePanel.add(welcomeLabel);
+        usernamePanel.add(Box.createVerticalStrut(20));
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(Box.createVerticalStrut(10));
+        usernamePanel.add(usernameField);
+        usernamePanel.add(Box.createVerticalStrut(20));
+        usernamePanel.add(continueButton);
+
+        frame.add(usernamePanel, BorderLayout.CENTER);
+        frame.setVisible(true);
+    }
+
+    private void handleUsernameInput() {
+        String username = usernameField.getText().trim();
+        if (username.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Username cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(frame, "Welcome, " + username + "!", "Login Successful",
+                    JOptionPane.INFORMATION_MESSAGE);
+            showMainScreen();
+        }
+    }
+
+    public void showMainScreen() {
+        frame.remove(usernamePanel);
+
+        mainPanel = new JPanel();
+        mainPanel.setBackground(new Color(255, 230, 230)); // Light red pastel background
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JPanel sidebar = new JPanel();
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setBackground(new Color(255, 85, 85)); // Red sidebar
+        sidebar.setPreferredSize(new Dimension(200, 600));
+
+        JLabel appTitle = new JLabel("Recipe Recommender");
+        appTitle.setFont(new Font("Sans Serif", Font.BOLD, 30));
+        appTitle.setForeground(Color.WHITE);
+        appTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel dietaryLabel = new JLabel("Select Dietary Preferences");
+        dietaryLabel.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        dietaryLabel.setForeground(Color.WHITE);
+        dietaryLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        dietaryComboBox = new JComboBox<>(
+                new String[] { "None", "Vegetarian", "Vegan", "Gluten-Free", "Low-Carb", "High-Protein" });
+        dietaryComboBox.setMaximumSize(new Dimension(150, 30));
+        dietaryComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton recommendButton = new JButton("Recommend Recipes");
+        recommendButton.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        recommendButton.setBackground(new Color(255, 50, 50)); // Darker red button
+        recommendButton.setForeground(Color.WHITE);
+        recommendButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        recommendButton.addActionListener(e -> {
+            cardLayout.show(contentPanel, "recipes");
+            recommendRecipes(); // Update recipes when switching
+        });
+
+        JButton generateGroceryListButton = new JButton("Generate Grocery List");
+        generateGroceryListButton.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        generateGroceryListButton.setBackground(new Color(255, 50, 50)); // Darker red button
+        generateGroceryListButton.setForeground(Color.WHITE);
+        generateGroceryListButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        generateGroceryListButton.addActionListener(e -> {
+            cardLayout.show(contentPanel, "groceryList");
+            generateGroceryList(); // Update grocery list when switching
+        });
+
+        sidebar.add(Box.createVerticalStrut(30));
+        sidebar.add(appTitle);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(dietaryLabel);
+        sidebar.add(Box.createVerticalStrut(10));
+        sidebar.add(dietaryComboBox);
+        sidebar.add(Box.createVerticalStrut(30));
+        sidebar.add(recommendButton);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(generateGroceryListButton);
+
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
+
+        JPanel recipePanel = new JPanel();
+        recipePanel.setLayout(new BorderLayout());
+        recipeDisplayArea = new JTextArea();
+        recipeDisplayArea.setEditable(false);
+        recipeDisplayArea.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        recipeDisplayArea.setBackground(new Color(255, 255, 255));
+        recipePanel.add(new JScrollPane(recipeDisplayArea), BorderLayout.CENTER);
+
+        JPanel groceryPanel = new JPanel();
+        groceryPanel.setLayout(new BorderLayout());
+        groceryListArea = new JTextArea();
+        groceryListArea.setEditable(false);
+        groceryListArea.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        groceryListArea.setBackground(new Color(255, 255, 255));
+        groceryPanel.add(new JScrollPane(groceryListArea), BorderLayout.CENTER);
+
+        contentPanel.add(recipePanel, "recipes");
+        contentPanel.add(groceryPanel, "groceryList");
+
+        mainPanel.add(sidebar, BorderLayout.WEST);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        frame.add(mainPanel, BorderLayout.CENTER);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void recommendRecipes() {
+        String selectedDietaryPreference = (String) dietaryComboBox.getSelectedItem();
+        StringBuilder recommendedRecipes = new StringBuilder("Recommended Recipes:\n");
+
+        // Check if recipes.txt exists
+        File recipeFile = new File("recipes.txt");
+        if (!recipeFile.exists()) {
+            JOptionPane.showMessageDialog(frame, "Recipes file not found.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Read recipes from the file and filter based on dietary preference
+        try (BufferedReader reader = new BufferedReader(new FileReader(recipeFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Check if dietary preference matches or if no preference is selected
+                if (line.toLowerCase().contains(selectedDietaryPreference.toLowerCase())
+                        || selectedDietaryPreference.equals("None")) {
+                    recommendedRecipes.append(line).append("\n");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Error reading the recipe file.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+
+        if (recommendedRecipes.length() == 0) {
+            recommendedRecipes.append("No recipes found matching your criteria.");
+        }
+
+        recipeDisplayArea.setText(recommendedRecipes.toString());
+    }
+
+    private void generateGroceryList() {
+        StringBuilder groceryListText = new StringBuilder("Your Grocery List:\n");
+
+        // Check if grocerylist.txt exists
+        File groceryFile = new File("grocerylist.txt");
+        if (!groceryFile.exists()) {
+            JOptionPane.showMessageDialog(frame, "Grocery list file not found.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Read grocery items from the file
+        try (BufferedReader reader = new BufferedReader(new FileReader(groceryFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                groceryListText.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Error reading the grocery list file.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+        groceryListArea.setText(groceryListText.toString());
+    }
+}
