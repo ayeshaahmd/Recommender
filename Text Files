@@ -1,0 +1,355 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import javax.imageio.ImageIO;
+
+public class RecipeRecommender {
+
+    private JFrame frame;
+    private JTextField usernameField;
+    private JTextArea recipeDisplayArea;
+    private JTextArea groceryListArea;
+    private JComboBox<String> dietaryComboBox;
+    private JPanel usernamePanel;
+    private JPanel mainPanel;
+    private JPanel contentPanel;
+    private CardLayout cardLayout;
+    private Timer timer;
+    private int timeRemaining; // in seconds
+    private JTextField minutesField;
+    private JTextField secondsField;
+    private JLabel timerLabel;
+
+    private String username;
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new RecipeRecommender().showUsernameScreen());
+    }
+
+    public RecipeRecommender() {
+        // Constructor
+    }
+
+    public void showUsernameScreen() {
+        frame = new JFrame("Savory Sense");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.setResizable(true);
+
+        // Set purple background color
+        frame.getContentPane().setBackground(new Color(128, 0, 128));
+
+        usernamePanel = new ImagePanel("image2.jpg"); // Replace with your image path
+        usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.Y_AXIS));
+
+        JLabel welcomeLabel = createLabel("Welcome to Savory Sense!", 24, Color.BLACK);
+        JLabel usernameLabel = createLabel("Enter Username:", 16, Color.BLACK);
+
+        usernameField = new JTextField();
+        usernameField.setFont(new Font("Sans Serif", Font.PLAIN, 18));
+        usernameField.setMaximumSize(new Dimension(250, 30));
+        usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton loginButton = createButton("Login", 18, e -> handleUsernameInput());
+        loginButton.setBackground(Color.RED); // Red background
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setOpaque(true);
+        loginButton.setBorderPainted(false);
+
+        usernamePanel.add(Box.createVerticalStrut(200));
+        usernamePanel.add(welcomeLabel);
+        usernamePanel.add(Box.createVerticalStrut(20));
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(Box.createVerticalStrut(10));
+        usernamePanel.add(usernameField);
+        usernamePanel.add(Box.createVerticalStrut(20));
+        usernamePanel.add(loginButton);
+
+        frame.add(usernamePanel);
+        frame.setVisible(true);
+    }
+
+    private void handleUsernameInput() {
+        username = usernameField.getText().trim();
+        if (username.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Username cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            saveUsername(username);
+            JOptionPane.showMessageDialog(frame, "Welcome, " + username + "!", "Login Successful",
+                    JOptionPane.INFORMATION_MESSAGE);
+            showMainScreen();
+        }
+    }
+
+    private void saveUsername(String username) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("username.txt"))) {
+            writer.write(username);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(frame, "Error saving username.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void showMainScreen() {
+        frame.getContentPane().removeAll(); // Remove username panel
+
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+
+        // Add ImagePanel as a background to mainPanel
+        mainPanel.add(new ImagePanel("image1.jpg"), BorderLayout.CENTER); // Use the image you want
+
+        JPanel sidebar = createSidebar();
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
+
+        // Recipe display panel with smaller text area
+        JPanel recipePanel = new JPanel(new BorderLayout());
+        recipeDisplayArea = new JTextArea(5, 25); // Smaller text area for recipes
+        recipeDisplayArea.setEditable(false);
+        recipeDisplayArea.setFont(new Font("Sans Serif", Font.PLAIN, 14)); // Smaller font
+        recipePanel.add(new JScrollPane(recipeDisplayArea), BorderLayout.CENTER);
+
+        // Grocery list panel with smaller text area
+        JPanel groceryPanel = new JPanel(new BorderLayout());
+        groceryListArea = new JTextArea(5, 25); // Smaller text area for grocery list
+        groceryListArea.setEditable(false);
+        groceryListArea.setFont(new Font("Sans Serif", Font.PLAIN, 14)); // Smaller font
+        groceryPanel.add(new JScrollPane(groceryListArea), BorderLayout.CENTER);
+
+        // Timer panel
+        JPanel timerPanel = createTimerPanel();
+
+        // Feedback panel
+        JPanel feedbackPanel = createFeedbackPanel();
+
+        contentPanel.add(recipePanel, "recipes");
+        contentPanel.add(groceryPanel, "groceryList");
+        contentPanel.add(timerPanel, "timer");
+        contentPanel.add(feedbackPanel, "feedback");
+
+        mainPanel.add(sidebar, BorderLayout.WEST);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        frame.add(mainPanel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private JPanel createSidebar() {
+        JPanel sidebar = new JPanel();
+        sidebar.setBackground(new Color(128, 0, 128)); // Purple background for sidebar
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setPreferredSize(new Dimension(200, 600)); // Sidebar width
+
+        JLabel appTitle = createLabel("Savory Sense", 21, Color.WHITE);
+
+        dietaryComboBox = new JComboBox<>(new String[] {
+                "None", "Vegetarian", "Non-Vegan", "Gluten-Free", "Low-Carb", "High-Protein"
+        });
+        dietaryComboBox.setMaximumSize(new Dimension(150, 25)); // Smaller combo box
+        dietaryComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton recommendButton = createButton("Recommend Recipes", 16, e -> {
+            cardLayout.show(contentPanel, "recipes");
+            recommendRecipes();
+        });
+
+        JButton groceryListButton = createButton("Generate Grocery List", 16, e -> {
+            cardLayout.show(contentPanel, "groceryList");
+            generateGroceryList();
+        });
+
+        JButton timerButton = createButton("Cooking Timer", 16, e -> cardLayout.show(contentPanel, "timer"));
+
+        JButton feedbackButton = createButton("Submit Feedback", 16, e -> cardLayout.show(contentPanel, "feedback"));
+
+        // Add components to sidebar panel
+        sidebar.add(Box.createVerticalStrut(30));
+        sidebar.add(appTitle);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(dietaryComboBox);
+        sidebar.add(Box.createVerticalStrut(30));
+        sidebar.add(recommendButton);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(groceryListButton);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(timerButton);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(feedbackButton);
+
+        return sidebar;
+    }
+
+    private JPanel createFeedbackPanel() {
+        JPanel feedbackPanel = new JPanel();
+        feedbackPanel.setLayout(new BoxLayout(feedbackPanel, BoxLayout.Y_AXIS));
+        feedbackPanel.setBackground(new Color(211, 211, 211));
+
+        JLabel feedbackTitle = createLabel("Your Feedback", 20, Color.BLACK); // Smaller title font size
+
+        JTextArea feedbackTextArea = new JTextArea(4, 25); // Smaller feedback text area
+        feedbackTextArea.setFont(new Font("Sans Serif", Font.PLAIN, 14)); // Smaller font
+        feedbackTextArea.setLineWrap(true);
+        feedbackTextArea.setWrapStyleWord(true);
+        feedbackTextArea.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+        JScrollPane scrollPane = new JScrollPane(feedbackTextArea);
+
+        JButton submitFeedbackButton = createButton("Submit Feedback", 16, e -> {
+            String feedback = feedbackTextArea.getText().trim();
+            if (!feedback.isEmpty()) {
+                saveFeedback(feedback);
+                feedbackTextArea.setText(""); // Clear after submission
+                JOptionPane.showMessageDialog(frame, "Thank you for your feedback!", "Feedback Submitted",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(frame, "Feedback cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        feedbackPanel.add(feedbackTitle);
+        feedbackPanel.add(Box.createVerticalStrut(10));
+        feedbackPanel.add(scrollPane);
+        feedbackPanel.add(Box.createVerticalStrut(20));
+        feedbackPanel.add(submitFeedbackButton);
+
+        return feedbackPanel;
+    }
+
+    private JPanel createTimerPanel() {
+        JPanel timerPanel = new JPanel();
+        timerPanel.setLayout(new BoxLayout(timerPanel, BoxLayout.Y_AXIS));
+        timerPanel.setBackground(Color.WHITE);
+
+        JLabel timerTitle = createLabel("Cooking Timer", 20, Color.BLACK); // Smaller title font size
+
+        JPanel timeInputPanel = new JPanel();
+        timeInputPanel.setLayout(new FlowLayout());
+        minutesField = new JTextField(2);
+        secondsField = new JTextField(2);
+        timeInputPanel.add(new JLabel("Minutes: "));
+        timeInputPanel.add(minutesField);
+        timeInputPanel.add(new JLabel("Seconds: "));
+        timeInputPanel.add(secondsField);
+
+        JButton startButton = createButton("Start Timer", 16, e -> startTimer());
+
+        timerLabel = createLabel("00:00", 24, Color.RED); // Timer label with larger font size
+
+        timerPanel.add(timerTitle);
+        timerPanel.add(Box.createVerticalStrut(10));
+        timerPanel.add(timeInputPanel);
+        timerPanel.add(Box.createVerticalStrut(10));
+        timerPanel.add(startButton);
+        timerPanel.add(Box.createVerticalStrut(20));
+        timerPanel.add(timerLabel);
+
+        return timerPanel;
+    }
+
+    private void startTimer() {
+        try {
+            int minutes = Integer.parseInt(minutesField.getText().trim());
+            int seconds = Integer.parseInt(secondsField.getText().trim());
+            timeRemaining = minutes * 60 + seconds;
+
+            if (timeRemaining <= 0) {
+                JOptionPane.showMessageDialog(frame, "Please enter a valid time.", "Invalid Time",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Start timer using a Timer
+            timer = new Timer(1000, e -> updateTimer());
+            timer.start();
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(frame, "Please enter valid numbers for minutes and seconds.", "Invalid Input",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateTimer() {
+        if (timeRemaining > 0) {
+            timeRemaining--;
+            int minutes = timeRemaining / 60;
+            int seconds = timeRemaining % 60;
+            timerLabel.setText(String.format("%02d:%02d", minutes, seconds));
+        } else {
+            timer.stop();
+            JOptionPane.showMessageDialog(frame, "Time's up! Your dish is ready.", "Timer Finished",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void recommendRecipes() {
+        String selectedDiet = (String) dietaryComboBox.getSelectedItem();
+        String recipes = getRecommendedRecipes(selectedDiet);
+        recipeDisplayArea.setText(recipes);
+    }
+
+    private String getRecommendedRecipes(String diet) {
+        // Dummy data for demonstration, you can expand with actual recipes
+        switch (diet) {
+            case "Vegetarian":
+                return "Vegetarian Recipe 1\nVegetarian Recipe 2\nVegetarian Recipe 3";
+            case "Non-Vegan":
+                return "Non-Vegan Recipe 1\nNon-Vegan Recipe 2\nNon-Vegan Recipe 3";
+            case "Gluten-Free":
+                return "Gluten-Free Recipe 1\nGluten-Free Recipe 2\nGluten-Free Recipe 3";
+            case "Low-Carb":
+                return "Low-Carb Recipe 1\nLow-Carb Recipe 2\nLow-Carb Recipe 3";
+            case "High-Protein":
+                return "High-Protein Recipe 1\nHigh-Protein Recipe 2\nHigh-Protein Recipe 3";
+            default:
+                return "Please select a dietary preference.";
+        }
+    }
+
+    private void generateGroceryList() {
+        groceryListArea.setText("Grocery Item 1\nGrocery Item 2\nGrocery Item 3");
+    }
+
+    private void saveFeedback(String feedback) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("feedback.txt", true))) {
+            writer.write("Feedback from " + username + ": " + feedback + "\n");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(frame, "Error saving feedback.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private JLabel createLabel(String text, int fontSize, Color color) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Sans Serif", Font.BOLD, fontSize));
+        label.setForeground(color);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return label;
+    }
+
+    private JButton createButton(String text, int fontSize, ActionListener actionListener) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Sans Serif", Font.BOLD, fontSize));
+        button.addActionListener(actionListener);
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return button;
+    }
+
+    // ImagePanel class for custom background images
+    private static class ImagePanel extends JPanel {
+        private final Image image;
+
+        public ImagePanel(String imagePath) {
+            try {
+                image = ImageIO.read(new File(imagePath));
+            } catch (IOException e) {
+                throw new RuntimeException("Image not found: " + imagePath, e);
+            }
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            g.drawImage(image, 0, 0, getWidth(), getHeight(), this);
+        }
+    }
+}
