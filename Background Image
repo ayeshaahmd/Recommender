@@ -1,0 +1,311 @@
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.io.*;
+// import java.util.List;
+
+public class RecipeRecommender {
+
+    private JFrame frame;
+    private JTextField usernameField;
+    private JTextArea recipeDisplayArea;
+    private JTextArea groceryListArea;
+    private JComboBox<String> dietaryComboBox;
+    private JPanel usernamePanel;
+    private JPanel mainPanel;
+    private JPanel contentPanel;
+    private CardLayout cardLayout;
+    private Timer timer;
+    private int timeRemaining; // in seconds
+    private JTextField minutesField;
+    private JTextField secondsField;
+    private JLabel timerLabel;
+
+    private String username;
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new RecipeRecommender().showUsernameScreen());
+    }
+
+    public RecipeRecommender() {
+        // Constructor
+    }
+
+    public void showUsernameScreen() {
+        frame = new JFrame("Savory Sense");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(800, 600);
+        frame.setResizable(true);
+
+        // Set purple background color
+        frame.getContentPane().setBackground(new Color(128, 0, 128));
+
+        usernamePanel = new ImagePanel("image2.jpg"); // Replace with your image path
+        usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.Y_AXIS));
+
+        JLabel welcomeLabel = createLabel("Welcome to Savory Sense!", 24, Color.BLACK);
+        JLabel usernameLabel = createLabel("Enter Username:", 16, Color.BLACK);
+
+        usernameField = new JTextField();
+        usernameField.setFont(new Font("Sans Serif", Font.PLAIN, 18));
+        usernameField.setMaximumSize(new Dimension(250, 30));
+        usernameField.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton loginButton = createButton("Login", 18, e -> handleUsernameInput());
+        loginButton.setBackground(Color.RED); // Red background
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setOpaque(true);
+        loginButton.setBorderPainted(false);
+
+        usernamePanel.add(Box.createVerticalStrut(200));
+        usernamePanel.add(welcomeLabel);
+        usernamePanel.add(Box.createVerticalStrut(20));
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(Box.createVerticalStrut(10));
+        usernamePanel.add(usernameField);
+        usernamePanel.add(Box.createVerticalStrut(20));
+        usernamePanel.add(loginButton);
+
+        frame.add(usernamePanel);
+        frame.setVisible(true);
+    }
+
+    private void handleUsernameInput() {
+        username = usernameField.getText().trim();
+        if (username.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Username cannot be empty.", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            saveUsername(username);
+            JOptionPane.showMessageDialog(frame, "Welcome, " + username + "!", "Login Successful",
+                    JOptionPane.INFORMATION_MESSAGE);
+            showMainScreen();
+        }
+    }
+
+    private void saveUsername(String username) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("username.txt"))) {
+            writer.write(username);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(frame, "Error saving username.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void showMainScreen() {
+        frame.getContentPane().removeAll(); // Remove username panel
+
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
+
+        // Add ImagePanel as a background to mainPanel
+        mainPanel.add(new ImagePanel("image1.jpg"), BorderLayout.CENTER); // Use the image you want
+
+        JPanel sidebar = createSidebar();
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
+
+        // Recipe display panel
+        JPanel recipePanel = new JPanel(new BorderLayout());
+        recipeDisplayArea = new JTextArea();
+        recipeDisplayArea.setEditable(false);
+        recipeDisplayArea.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        recipePanel.add(new JScrollPane(recipeDisplayArea), BorderLayout.CENTER);
+
+        // Grocery list panel
+        JPanel groceryPanel = new JPanel(new BorderLayout());
+        groceryListArea = new JTextArea();
+        groceryListArea.setEditable(false);
+        groceryListArea.setFont(new Font("Sans Serif", Font.PLAIN, 16));
+        groceryPanel.add(new JScrollPane(groceryListArea), BorderLayout.CENTER);
+
+        // Timer panel
+        JPanel timerPanel = createTimerPanel();
+
+        contentPanel.add(recipePanel, "recipes");
+        contentPanel.add(groceryPanel, "groceryList");
+        contentPanel.add(timerPanel, "timer");
+
+        mainPanel.add(sidebar, BorderLayout.WEST);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        frame.add(mainPanel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private JPanel createSidebar() {
+        JPanel sidebar = new JPanel();
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setBackground(new Color(105, 105, 105));
+        sidebar.setPreferredSize(new Dimension(250, 600));
+
+        JLabel appTitle = createLabel("Savory Sense", 21, Color.WHITE);
+
+        // Dietary preferences combo box
+        dietaryComboBox = new JComboBox<>(new String[] {
+                "None", "Vegetarian", "Non-Vegan", "Gluten-Free", "Low-Carb", "High-Protein"
+        });
+        dietaryComboBox.setMaximumSize(new Dimension(150, 30));
+        dietaryComboBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton recommendButton = createButton("Recommend Recipes", 16, e -> {
+            cardLayout.show(contentPanel, "recipes");
+            recommendRecipes();
+        });
+
+        JButton generateGroceryListButton = createButton("Generate Grocery List", 16, e -> {
+            cardLayout.show(contentPanel, "groceryList");
+            generateGroceryList();
+        });
+
+        JButton timerButton = createButton("Cooking Timer", 16, e -> cardLayout.show(contentPanel, "timer"));
+
+        sidebar.add(Box.createVerticalStrut(30));
+        sidebar.add(appTitle);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(dietaryComboBox);
+        sidebar.add(Box.createVerticalStrut(30));
+        sidebar.add(recommendButton);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(generateGroceryListButton);
+        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(timerButton);
+
+        return sidebar;
+    }
+
+    private JPanel createTimerPanel() {
+        JPanel timerPanel = new JPanel();
+        timerPanel.setLayout(new BoxLayout(timerPanel, BoxLayout.Y_AXIS));
+        timerPanel.setBackground(new Color(211, 211, 211));
+
+        JLabel timerTitle = createLabel("Cooking Timer", 24, Color.BLACK);
+
+        minutesField = new JTextField("00", 2);
+        secondsField = new JTextField("00", 2);
+        minutesField.setFont(new Font("Sans Serif", Font.PLAIN, 36));
+        secondsField.setFont(new Font("Sans Serif", Font.PLAIN, 36));
+        minutesField.setHorizontalAlignment(JTextField.CENTER);
+        secondsField.setHorizontalAlignment(JTextField.CENTER);
+
+        JPanel timeInputPanel = new JPanel();
+        timeInputPanel.add(new JLabel("Minutes: "));
+        timeInputPanel.add(minutesField);
+        timeInputPanel.add(Box.createHorizontalStrut(10));
+        timeInputPanel.add(new JLabel("Seconds: "));
+        timeInputPanel.add(secondsField);
+
+        timerLabel = createLabel("00:00", 36, Color.BLACK);
+
+        JButton startButton = createButton("Start", 16, e -> startTimer());
+        JButton pauseButton = createButton("Pause", 16, e -> pauseTimer());
+        JButton resetButton = createButton("Reset", 16, e -> resetTimer());
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(startButton);
+        buttonPanel.add(pauseButton);
+        buttonPanel.add(resetButton);
+
+        timerPanel.add(timerTitle);
+        timerPanel.add(Box.createVerticalStrut(20));
+        timerPanel.add(timeInputPanel);
+        timerPanel.add(Box.createVerticalStrut(20));
+        timerPanel.add(timerLabel);
+        timerPanel.add(Box.createVerticalStrut(20));
+        timerPanel.add(buttonPanel);
+
+        return timerPanel;
+    }
+
+    private void startTimer() {
+        try {
+            int minutes = Integer.parseInt(minutesField.getText().trim());
+            int seconds = Integer.parseInt(secondsField.getText().trim());
+            timeRemaining = minutes * 60 + seconds;
+
+            if (timer != null) {
+                timer.stop();
+            }
+
+            timer = new Timer(1000, e -> updateTimer());
+            timer.start();
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(frame, "Invalid time format.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateTimer() {
+        if (timeRemaining > 0) {
+            timeRemaining--;
+            int minutes = timeRemaining / 60;
+            int seconds = timeRemaining % 60;
+            timerLabel.setText(String.format("%02d:%02d", minutes, seconds));
+        } else {
+            timer.stop();
+            JOptionPane.showMessageDialog(frame, "Time's up!", "Timer", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void pauseTimer() {
+        if (timer != null) {
+            timer.stop();
+        }
+    }
+
+    private void resetTimer() {
+        if (timer != null) {
+            timer.stop();
+        }
+        timeRemaining = 0;
+        timerLabel.setText("00:00");
+        minutesField.setText("00");
+        secondsField.setText("00");
+    }
+
+    private void recommendRecipes() {
+        // Implement recipe recommendation logic based on dietary preferences
+        String dietaryPreference = (String) dietaryComboBox.getSelectedItem();
+        recipeDisplayArea.setText("Recommended Recipes based on: " + dietaryPreference);
+    }
+
+    private void generateGroceryList() {
+        // Implement grocery list generation
+        groceryListArea.setText("Generated grocery list goes here.");
+    }
+
+    private JLabel createLabel(String text, int fontSize, Color color) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Sans Serif", Font.PLAIN, fontSize));
+        label.setForeground(color);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return label;
+    }
+
+    private JButton createButton(String text, int fontSize, ActionListener listener) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Sans Serif", Font.PLAIN, fontSize));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.addActionListener(listener);
+        return button;
+    }
+
+    private class ImagePanel extends JPanel {
+        private Image image;
+
+        public ImagePanel(String imagePath) {
+            try {
+                image = ImageIO.read(new File(imagePath));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (image != null) {
+                g.drawImage(image, 0, 0, getWidth(), getHeight(), this);
+            }
+        }
+    }
+}
