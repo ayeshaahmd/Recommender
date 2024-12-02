@@ -1,0 +1,203 @@
+Recipe: Veggie Delight| Vegetarian| CookingTime: 02:30
+Ingredients:
+- Carrot
+- Potato
+- Peas
+Instructions:
+- Chop the vegetables.
+- Boil the vegetables until tender.
+- Serve.
+
+Recipe: Green Salad | Non-Vegan | CookingTime: 01:30
+Ingredients:
+- Lettuce
+- Spinach
+- Avocado
+Instructions:
+- Toss the lettuce, spinach, and avocado.
+- Add olive oil and lemon juice.
+
+Recipe: Protein Shake| High-Protein |CookingTime: 03:40
+Ingredients:
+- Milk
+- Banana
+- Protein Powder
+Instructions:
+- Blend all ingredients together until smooth.
+- Serve chilled.
+
+Recipe: Spaghetti with Tomato| None
+CookingTime: 05:00
+Ingredients:
+- Spaghetti
+- Tomato Sauce
+- Olive Oil
+Instructions:
+- Boil water, cook spaghetti, add sauce.
+
+Recipe: Vegetable Stir-Fry | Dietary: Vegetarian| CookingTime: 07:30
+Ingredients:
+- Mixed Vegetables
+- Soy Sauce
+- Garlic
+Instructions:
+- Heat oil, add vegetables, stir-fry, add sauce.
+
+Recipe: Chicken Karahi |High-Protein |CookingTime: 30:00
+Ingredients: 
+Chicken, Onion, Tomatoes, Ginger-garlic paste, Spices
+Instructions: 
+Sauté onions, add ginger-garlic paste, add tomatoes, cook until oil separates
+
+Recipe: Lemon Garlic Shrimp |High-Protein |CookingTime: 04:00
+Ingredients:
+- Shrimp
+- Garlic
+- Lemon Juice
+- Olive Oil
+- Parsley
+Instructions:
+- Heat olive oil, sauté garlic.
+- Add shrimp and cook until pink.
+- Stir in lemon juice and parsley.
+- Serve hot.
+
+Recipe: Chicken Tikka Salad |Low-Carb |CookingTime: 08:00
+Ingredients:
+- Chicken
+- Yogurt
+- Cumin
+- Coriander
+- Red Chili Powder
+- Lettuce
+- Cucumber
+Instructions:
+- Marinate chicken in yogurt and spices.
+- Grill chicken until cooked.
+- Prepare salad with lettuce and cucumber.
+- Top with grilled chicken and serve.
+
+Recipe: Grilled Chicken Salad| Low-Carb |CookingTime: 06:25
+Ingredients:
+- Chicken Breast
+- Lettuce
+- Cucumber
+- Cherry Tomatoes
+- Olive Oil
+- Lemon
+Instructions:
+- Grill chicken until cooked.
+- Prepare salad with lettuce, cucumber, and tomatoes.
+- Slice grilled chicken, add to salad.
+- Drizzle with olive oil and lemon juice, serve.
+
+Recipe: Spaghetti Aglio e Olio |Non-Vegetarian |CookingTime: 13:50
+Ingredients:
+- Spaghetti
+- Garlic
+- Olive Oil
+- Red Chili Flakes
+- Parsley
+- Salt
+Instructions:
+- Boil spaghetti.
+- Heat olive oil, sauté garlic and red chili flakes.
+- Add cooked spaghetti, toss well.
+- Garnish with parsley and serve.
+
+Recipe: Beef Tacos |Non-Vegan |CookingTime: 25:30
+Ingredients:
+- Ground Beef
+- Taco Seasoning
+- Tortillas
+- Lettuce
+- Tomatoes
+- Cheese
+Instructions:
+- Cook ground beef with taco seasoning.
+- Warm tortillas.
+- Assemble tacos with beef, lettuce, tomatoes, and cheese.
+- Serve immediately.
+
+Recipe: Aloo Gobi |Vegetarian |CookingTime: 15:40
+Ingredients:
+- Potatoes
+- Cauliflower
+- Onion
+- Tomatoes
+- Ginger-Garlic Paste
+- Spices (Turmeric, Red Chili Powder, Garam Masala)
+Instructions:
+- Heat oil, sauté onions, and add ginger-garlic paste.
+- Add tomatoes and spices, cook until oil separates.
+- Add potatoes and cauliflower, cook until tender.
+- Garnish and serve.
+
+Recipe: Chana Masala |Non-Vegan |CookingTime: 16:30
+Ingredients:
+- Chickpeas
+- Chicken
+- Onion
+- Tomatoes
+- Ginger-Garlic Paste
+- Spices (Cumin, Coriander, Garam Masala)
+Instructions:
+- Sauté onions and ginger-garlic paste.
+- Add tomatoes and spices, cook until oil separates.
+- Add chickpeas, cook for 15 minutes.
+- Garnish and serve.
+
+Recipe: Baingan Bharta |Gluten-Free |CookingTime: 09:45
+Ingredients:
+- Eggplant
+- Onion
+- Tomatoes
+- Ginger-Garlic Paste
+- Spices (Cumin, Red Chili Powder, Turmeric)
+Instructions:
+- Roast eggplant, peel, and mash.
+- Sauté onions and ginger-garlic paste.
+- Add tomatoes and spices, cook until oil separates.
+- Add eggplant, cook for 10 minutes.
+- Garnish and serve.
+
+Recipe: Mutton Korma |High-Protein |CookingTime: 45:30
+Ingredients:
+- Mutton
+- Onion
+- Tomatoes
+- Ginger-Garlic Paste
+- Spices (Cumin, Garam Masala, Red Chili Powder)
+Instructions:
+- Sauté onions and ginger-garlic paste.
+- Add tomatoes and spices, cook until oil separates.
+- Add mutton, cook until tender.
+- Garnish and serve.
+
+Recipe: Vegetable Stir-Fry |Vegetarian |CookingTime: 12:30
+Ingredients:
+- Mixed Vegetables (Bell Peppers, Carrots, Broccoli)
+- Soy Sauce
+- Garlic
+- Olive Oil
+Instructions:
+- Heat oil, sauté garlic.
+- Add mixed vegetables, stir-fry until tender.
+- Add soy sauce, cook for another 2 minutes.
+- Serve hot.
+
+Recipe: Falafel |Vegan |CookingTime: 35:00
+ingredients:
+- Chickpeas
+- Onion
+- Garlic
+- Parsley
+- Cumin
+- Flour
+- Oil
+instructions:
+- Blend chickpeas, onion, garlic, parsley, and spices.
+- Shape into balls, dip in flour.
+- Fry until golden brown.
+- Serve with pita or salad.
+
