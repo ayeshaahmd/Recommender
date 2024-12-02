@@ -1,0 +1,1 @@
+memberSearchIndex = [{"p":"<Unnamed>","c":"RecipeRecommender","l":"main(String[])","url":"main(java.lang.String[])"},{"p":"<Unnamed>","c":"RecipeRecommender","l":"RecipeRecommender()","url":"%3Cinit%3E()"},{"p":"<Unnamed>","c":"RecipeRecommender","l":"showMainScreen()"},{"p":"<Unnamed>","c":"RecipeRecommender","l":"showUsernameScreen()"}]
